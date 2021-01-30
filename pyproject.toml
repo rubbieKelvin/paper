@@ -1,0 +1,35 @@
+[tool.briefcase]
+project_name = "Paper"
+bundle = "com.stuffsbyhummans.paper"
+version = "0.0.1"
+url = "https://paper.stuffsbyhummans.com/paper"
+license = "GNU General Public License v3 (GPLv3)"
+author = 'stuffsbyhummans'
+author_email = "dev.rubbie@gmail.com"
+
+[tool.briefcase.app.paper]
+formal_name = "Paper"
+description = "collaborative checklist mananger"
+icon = "src/paper/resources/paper"
+sources = ['src/paper']
+requires = [
+    'pyside2==5.15.0'
+]
+
+
+[tool.briefcase.app.paper.macOS]
+requires = []
+
+[tool.briefcase.app.paper.linux]
+requires = []
+system_requires = []
+
+[tool.briefcase.app.paper.windows]
+requires = []
+
+# Mobile deployments
+[tool.briefcase.app.paper.iOS]
+requires = []
+
+[tool.briefcase.app.paper.android]
+requires = []

@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Briefcase-Version: 0.3.3
+Name: paper
+Formal-Name: Paper
+App-ID: com.stuffsbyhummans.paper.paper
+Version: 0.0.1
+Home-page: https://paper.stuffsbyhummans.com/paper
+Author: stuffsbyhummans
+Author-email: dev.rubbie@gmail.com
+Summary: collaborative checklist mananger
