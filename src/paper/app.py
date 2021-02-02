@@ -1,6 +1,7 @@
 """
 checklist mananger
 """
+
 import os
 import sys
 
@@ -19,6 +20,9 @@ metadata = importlib_metadata.metadata(app_module)
 # define the project root for recource purposes
 # for packging, resources will be saved as python byte code
 root = os.path.dirname(__file__)
+home = os.path.join(os.environ.get("HOME"), metadata.get("App-ID"))
+if not os.path.exists(home):
+	os.mkdir(home)
 
 # paper engine
 class Paper(QQmlApplicationEngine):
@@ -31,8 +35,16 @@ class Paper(QQmlApplicationEngine):
 	def init_plugins(self):
 
 		from .lib.qrequests import QmlRequest
+		from .lib.qjsonstorage import QmlJSONStorage
+		from .lib.qjsonstorage import QmlEncryptedJSONStorage
+
+		QmlJSONStorage.DICTIONARY = {
+			"$apphome": home
+		}
 
 		qmlRegisterType(QmlRequest, "Lib", 1, 0, "Request")
+		qmlRegisterType(QmlJSONStorage, "Lib", 1, 0, "JSONStorage")
+		qmlRegisterType(QmlEncryptedJSONStorage, "Lib", 1, 0, "EncryptedJSONStorage")
 
 	def init_ui(self):
 		self.load(
@@ -43,7 +55,7 @@ def main():
 	app = QGuiApplication(sys.argv)
 	app.setApplicationName(metadata.get("Name"))
 	
-	QQuickStyle.setStyle("Material")
+	QQuickStyle.setStyle("Fusion")
 
 	engine = Paper()
 

@@ -1,10 +1,10 @@
 [tool.briefcase]
 project_name = "Paper"
-bundle = "com.stuffsbyhummans.paper"
+bundle = "com.techwood.paper"
 version = "0.0.1"
-url = "https://paper.stuffsbyhummans.com/paper"
+url = "https://paper.techwood.com/paper"
 license = "GNU General Public License v3 (GPLv3)"
-author = 'stuffsbyhummans'
+author = 'techwood'
 author_email = "dev.rubbie@gmail.com"
 
 [tool.briefcase.app.paper]
