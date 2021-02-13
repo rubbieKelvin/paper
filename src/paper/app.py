@@ -5,9 +5,9 @@ checklist mananger
 import os
 import sys
 
-from PySide2.QtGui import QGuiApplication
-from PySide2.QtQuickControls2 import QQuickStyle
-from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtQuickControls2 import QQuickStyle
+from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
 
 from importlib import metadata as importlib_metadata
 

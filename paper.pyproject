@@ -1,0 +1,18 @@
+{
+	"files": [
+		"src/paper/resources/source/app.qml",
+		"src/paper/resources/source/auth.qml",
+		"src/paper/resources/source/home.qml",
+
+		"src/paper/resources/source/components/controls/UiProgressBar.qml",
+		"src/paper/resources/source/components/controls/UiTextField.qml",
+		"src/paper/resources/source/components/controls/UiButton.qml",
+
+		"src/paper/resources/source/components/delegates/NavItem.qml",
+		"src/paper/resources/source/components/delegates/CheckBookItem.qml",
+		"src/paper/resources/source/components/delegates/AudioDelegate.qml",
+		"src/paper/resources/source/components/delegates/TextDelegate.qml",
+		"src/paper/resources/source/components/delegates/ImageDelegate.qml",
+		"src/paper/resources/source/components/delegates/ListDelegate.qml"
+	]
+}

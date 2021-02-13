@@ -13,7 +13,8 @@ description = "collaborative checklist mananger"
 icon = "src/paper/resources/paper"
 sources = ['src/paper']
 requires = [
-    'pyside2==5.15.0'
+    'PySide2==6.0.1',
+    'requests==2.25.1'
 ]
 
 
