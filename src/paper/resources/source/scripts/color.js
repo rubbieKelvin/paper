@@ -14,4 +14,8 @@ class Color{
 	get strokegray() {
 		return `#${this.aplha}EaEaEa`;
 	}
+
+	get danger() {
+		return `#${this.alpha}f44336`;
+	}
 }
