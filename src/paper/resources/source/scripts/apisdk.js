@@ -48,3 +48,33 @@ function getUser(token){
 	xhr.send();
 	return xhr;
 }
+
+function createCheckbook(name, token){
+	const xhr = makeXhr(
+		`${baseurl}/api/app/checkbook/`,
+		"POST",
+		{Authorization: `Token ${token}`}
+	);
+
+	xhr.send(
+		JSON.stringify(
+			{
+				name: name,
+				starred: false
+			}
+		)
+	);
+
+	return xhr;
+}
+
+function getCheckbooks(token){
+	const xhr = makeXhr(
+		`${baseurl}/api/app/checkbook/`,
+		"GET",
+		{Authorization: `Token ${token}`}
+	);
+
+	xhr.send();
+	return xhr;
+}

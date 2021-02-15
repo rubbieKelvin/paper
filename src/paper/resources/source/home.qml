@@ -4,16 +4,35 @@ import QtQuick.Layouts 1.11
 import QtQuick.Window 2.12
 
 import "./components/" as UiComponents
+import "./components/controls" as UiControls
 import "./components/delegates" as UiDelegates
 
 import "./scripts/dl.js" as Dl
 import "./scripts/sort.js" as Sort
 import "./scripts/color.js" as ColorJS
 import "./scripts/mdicons.mjs" as MDIcons
+import "./scripts/apisdk.js" as ApiSDK
 
 Page{
 	title: "task"
 	background: Rectangle {color: "white"}
+
+	function fetchCheckbooks () {
+		const token = encryptedStorage.read(constants.token_filename);
+		if (token) {
+			const xhr = ApiSDK.getCheckbooks(token.auth_token);
+			xhr.onload = function () {
+				const response = xhr.response;
+				console.log(JSON.stringify(response));
+			}
+		}else{
+			application.logoutAndGoAuth();
+		}
+	}
+
+	Component.onCompleted: {
+
+	}
 
 	RowLayout{
 		anchors.fill: parent
@@ -193,10 +212,12 @@ Page{
 						anchors.margins: 5
 
 						ListView {
-							id: check_book_tem
+							id: check_book_item_list
 							anchors.fill: parent
 							clip: true
-							model: 30
+							model: ListModel{
+								id: check_book_item_list_model
+							}
 							spacing: 5
 							delegate: UiDelegates.CheckBookItem{
 								width: (parent || {width: 0}).width
@@ -204,6 +225,7 @@ Page{
 						}
 					}
 
+					// fab
 					RoundButton {
 						anchors.right: parent.right
 						anchors.bottom: parent.bottom
@@ -230,7 +252,116 @@ Page{
 						}
 
 
-						onClicked: new_checkbook_window.visible = true
+						onClicked: add_checkbook_box.visible = true
+					}
+
+					// close fab
+					RoundButton {
+						x: 5
+						flat: true
+						icon.source: cancel_icon__1.source
+						highlighted: false
+						display: AbstractButton.IconOnly
+						visible: add_checkbook_box.visible
+						Layout.preferredHeight: 30
+						Layout.preferredWidth: 30
+						anchors.bottom: add_checkbook_box.top
+						anchors.bottomMargin: x
+						background: Rectangle{
+							radius: parent.width/2
+							implicitWidth: 30
+							implicitHeight: 30
+							color: (new ColorJS.Color()).danger
+						}
+
+						UiComponents.Icon{
+							id: cancel_icon__1
+							visible: false
+							enabled: false
+							svgHeight: 30
+							svgWidth: 30
+							color: "white"
+							path: MDIcons.mdiCancel
+						}
+
+						onClicked: {
+							add_checkbook_box.visible = false
+							check_book_name_field.text = "";
+						}
+					}
+
+					Rectangle{
+						id: add_checkbook_box
+						color: (new ColorJS.Color()).strokegray
+						width: parent.width
+						height: 70
+						anchors.bottom: parent.bottom
+						visible: false
+						enabled: visible
+						
+						RowLayout{
+							anchors.left: parent.left
+							anchors.right: parent.right
+							anchors.verticalCenter: parent.verticalCenter
+							anchors.leftMargin: 5
+							anchors.rightMargin: 5
+							height: 50
+							spacing: 5
+
+							TextField {
+								id: check_book_name_field
+								Layout.fillWidth: true
+								Layout.fillHeight: true
+								Layout.preferredHeight: 50
+								placeholderText: qsTr("Checkbook name...")
+								padding: 5
+								color: (this.text.trim().length <= 20) ? (new ColorJS.Color()).textdark : (new ColorJS.Color()).danger
+								background: Rectangle{
+									color: "transparent"
+								}
+
+							}
+
+							UiControls.UiButton{
+								label.text: "create"
+								Layout.preferredWidth: 80
+								onClicked: {
+									this.loading = true;
+
+									const action_button = this;
+									const box = add_checkbook_box;
+									const text_field = check_book_name_field;
+									const checkbook_name = check_book_name_field.text.trim();
+									const token = encryptedStorage.read(constants.token_filename);
+
+									if (token){
+										const auth_token = token.auth_token;
+										const xhr = ApiSDK.createCheckbook(checkbook_name, auth_token);
+
+										xhr.onload = function () {
+											const response = xhr.response;
+											const status = xhr.status;
+
+											if (status === 200) {
+												console.log(JSON.stringify(response));
+												text_field.text = "";
+												box.visible = false;
+												action_button.loading = false;
+											}else{
+												action_button.loading = false;
+											}
+										}
+
+										xhr.onerror = function(){
+											action_button.loading = false;
+										}
+
+									}else{
+										application.logoutAndGoAuth();
+									}
+								}
+							}
+						}
 					}
 				}
 			}

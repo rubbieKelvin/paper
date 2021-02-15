@@ -25,6 +25,11 @@ ApplicationWindow{
 	property variant user: null
 	signal userUpdated()
 
+	function logoutAndGoAuth(){
+		encryptedStorage.delete(constants.token_filename);
+		application_stack.push("./auth.qml");
+	}
+
 	QtObject {
 		id: constants
 		readonly property string token_filename: "{$apphome}/paper.user.xxx"
@@ -79,7 +84,7 @@ ApplicationWindow{
 					Component.onCompleted: {
 
 						// check for token
-						const token = encryptedStorage.read(constants.token_filename)
+						const token = encryptedStorage.read(constants.token_filename);
 						const stack = application_stack;
 
 						if (token === undefined){

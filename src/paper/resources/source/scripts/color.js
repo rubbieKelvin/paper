@@ -1,18 +1,18 @@
 class Color{
-	constructor(aplha){
-		this.aplha = aplha || "";
+	constructor(alpha){
+		this.alpha = alpha || "";
 	}
 
 	get primary () {
-		return `#${this.aplha}4460F1`;
+		return `#${this.alpha}4460F1`;
 	}
 
 	get textdark() {
-		return `#${this.aplha}1A1A1A`;
+		return `#${this.alpha}1A1A1A`;
 	}
 
 	get strokegray() {
-		return `#${this.aplha}EaEaEa`;
+		return `#${this.alpha}EaEaEa`;
 	}
 
 	get danger() {
