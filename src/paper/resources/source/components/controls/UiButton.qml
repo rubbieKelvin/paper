@@ -35,7 +35,7 @@ Rectangle {
 
 			ColorAnimation {
 				easing.type: Easing.InQuad
-				duration: 200
+				duration: 100
 			}
 		}
 	]
@@ -44,7 +44,6 @@ Rectangle {
 		id: mousearea
 		anchors.fill: parent
 		cursorShape: Qt.PointingHandCursor
-		hoverEnabled: root.hoverEnabled
 		onEntered: {
 			root.hovered(true);
 			root.state = "hovered";
@@ -53,8 +52,12 @@ Rectangle {
 			root.hovered(false);
 			root.state = "";
 		}
+		
 		onClicked: {
 			root.clicked();
+		}
+
+		onPressed: {
 			root.state = "down";
 		}
 		onReleased: {

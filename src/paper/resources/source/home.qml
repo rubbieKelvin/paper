@@ -1,16 +1,15 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.11
+import QtQuick.Window 2.12
+
+import "./components/" as UiComponents
+import "./components/delegates" as UiDelegates
 
 import "./scripts/dl.js" as Dl
-import "./components/" as UiComponents
+import "./scripts/sort.js" as Sort
 import "./scripts/color.js" as ColorJS
 import "./scripts/mdicons.mjs" as MDIcons
-import "./components/delegates" as UiDelegates
-import "./scripts/sort.js" as Sort
-
-// TODO: remove the impot below
-import "./scripts/dummy_data.js" as Dummy
 
 Page{
 	title: "task"
@@ -37,14 +36,22 @@ Page{
 				spacing: 3
 
 				Label {
-					id: label
-					text: qsTr("Rubbie Kelvin")
+					id: user_email_label
+					text: application.user.email ? application.user.email : "unknown"
 					clip: true
 					color: "white"
 					font.pixelSize: 14
 					verticalAlignment: Text.AlignVCenter
 					Layout.fillHeight: true
 					Layout.fillWidth: true
+
+					Connections {
+						target: application
+
+						function onUserUpdated(){
+							user_email_label.text = application.user.email ? application.user.email : "unknown";
+						}
+					}
 				}
 
 				RoundButton {
@@ -72,8 +79,12 @@ Page{
 				id: menu_list
 				x: 10
 				width: parent.width-20
-				spacing: 5
+				flickDeceleration: 1
+				maximumFlickVelocity: 1
+				boundsMovement: Flickable.FollowBoundsBehavior
+				flickableDirection: Flickable.VerticalFlick
 				boundsBehavior: Flickable.StopAtBounds
+				spacing: 5
 				clip: true
 				anchors.bottom: parent.bottom
 				anchors.bottomMargin: 0
@@ -217,6 +228,9 @@ Page{
 							color: "#ffffff"
 							path: MDIcons.mdiPlus
 						}
+
+
+						onClicked: new_checkbook_window.visible = true
 					}
 				}
 			}
@@ -369,10 +383,26 @@ Page{
 					spacing: 10
 					padding: 5
 
+					function addNote(title, note){}
+					function addRecording(title){}
+					function addImage(){}
+					function addList(){}
+
+					// Component.onCompleted: {
+					// 	const i = check_book_repeater.model
+					// 	i.push(
+					// 		{
+					// 			type: "text",
+					// 			value: "Lorem ipsum dolor sit amet"
+					// 		}
+					// 	)
+					// 	check_book_repeater.model = i;
+					// }
 
 					Repeater{
+						id: check_book_repeater
 						clip: true
-						model: Sort.sort_types(Dummy.check_book)
+						model: ListModel{id: check_model}
 						delegate: Item{
 							id: _root
 							height: childrenRect.height
@@ -427,6 +457,7 @@ Page{
 										_root,
 										{model: modelData.value}
 									)
+
 								} else if (modelData.type === "audio") {
 									item = new Dl.Item(
 										Qt.createComponent("./components/delegates/AudioDelegate.qml"),
