@@ -23,6 +23,7 @@ Page{
 			const xhr = ApiSDK.getCheckbooks(token.auth_token);
 			xhr.onload = function () {
 				const response = xhr.response;
+				check_book_item_list_model.clear();
 				response.map(
 					checkbook_membership => {
 						check_book_item_list_model.append(checkbook_membership.checkbook);
@@ -168,6 +169,8 @@ Page{
 						radius: 20
 						height: 40
 						id: middle_header
+						visible: check_book_item_list_model.count > 0
+						enabled: visible
 						anchors.margins: 10
 						anchors.left: parent.left
 						anchors.right: parent.right
@@ -208,6 +211,8 @@ Page{
 						anchors.bottom: parent.bottom
 						anchors.left: parent.left
 						anchors.margins: 5
+						visible: check_book_item_list_model.count > 0
+						enabled: visible
 
 						ListView {
 							id: check_book_item_list
@@ -223,6 +228,41 @@ Page{
 								width: (parent || {width: 0}).width
 								height: (visible) ? 50 : 0
 							}
+						}
+					}
+
+					// no-check-state
+					ColumnLayout{
+						visible: check_book_item_list_model.count === 0
+						enabled: visible
+						anchors.centerIn: parent
+						spacing: 5
+						width: 152
+						height: 173
+
+						Image{
+							Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+							source: "./assets/svg/sad-face-in-rounded-square.svg"
+						}
+
+						Label{
+							text: qsTr("No Checkbooks!")
+							Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+							color: "#7f7f7f"
+							font.pixelSize: 14
+							font.weight: Font.Bold
+						}
+
+
+						Label {
+							text: qsTr("click the round button below to create a new checkbook")
+							horizontalAlignment: Text.AlignHCenter
+							Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+							Layout.fillWidth: true
+							color: "#7f7f7f"
+							wrapMode: Text.WordWrap
+							font.pixelSize: 11
+
 						}
 					}
 
@@ -324,7 +364,6 @@ Page{
 								onAccepted: {
 									create_new_checkbook_button.clicked();
 								}
-
 							}
 
 							UiControls.UiButton{
@@ -618,3 +657,9 @@ Page{
 		}
 	}
 }
+
+/*##^##
+Designer {
+	D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/
