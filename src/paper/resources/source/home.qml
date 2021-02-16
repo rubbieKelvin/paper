@@ -187,6 +187,7 @@ Page{
 							}
 
 							TextField{
+								id: search_checkbook_text_field
 								font.pixelSize: 12
 								placeholderText: "Search Notes..."
 								Layout.fillHeight: true
@@ -217,8 +218,10 @@ Page{
 							delegate: UiDelegates.CheckBookItem{
 								favourite: starred
 								label.text: name
+								visible: name.includes(search_checkbook_text_field.text.trim())
 								about.text: "0 items"
 								width: (parent || {width: 0}).width
+								height: (visible) ? 50 : 0
 							}
 						}
 					}
@@ -260,7 +263,7 @@ Page{
 						icon.source: cancel_icon__1.source
 						highlighted: false
 						display: AbstractButton.IconOnly
-						visible: add_checkbook_box.visible
+						visible: add_checkbook_box.visible && !create_new_checkbook_button.loading
 						Layout.preferredHeight: 30
 						Layout.preferredWidth: 30
 						anchors.bottom: add_checkbook_box.top
@@ -318,9 +321,14 @@ Page{
 									color: "transparent"
 								}
 
+								onAccepted: {
+									create_new_checkbook_button.clicked();
+								}
+
 							}
 
 							UiControls.UiButton{
+								id: create_new_checkbook_button
 								label.text: "create"
 								Layout.preferredWidth: 80
 								onClicked: {
