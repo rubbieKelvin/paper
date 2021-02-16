@@ -68,7 +68,24 @@ Page{
 			if (xhr.status === 200) {
 				encryptedStorage.write(constants.token_filename, response);
 				alert_box.notify("logged in");
-				application_stack.push("./home.qml");
+
+				const xhr_2 = ApiSDK.getUser(response.auth_token);
+				const stack = application_stack;
+				const app = application;
+
+				xhr_2.onload = function() {
+					const response = xhr_2.response;
+					const status = xhr_2.status;
+
+					if (status === 200) {
+						app.user = response;
+						app.userUpdated();
+
+						// just go to signup
+						stack.clear();
+						stack.push("./home.qml");
+					}
+				}
 
 			}else if (xhr.status === 400) {
 				alert_box.notify("Unable to log in with provided credentials.");

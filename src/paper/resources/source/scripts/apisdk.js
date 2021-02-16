@@ -94,3 +94,48 @@ function editCheckbook(id, name, starred, token) {
 	xhr.send(JSON.stringify(data));
 	return xhr;
 }
+
+function getTags(token){
+	const xhr = makeXhr(
+		`${baseurl}/api/app/tags/`,
+		"GET",
+		{Authorization: `Token ${token}`}
+	)
+
+	xhr.send();
+	return xhr;
+}
+
+function createTag(name, token) {
+	const xhr = makeXhr(
+		`${baseurl}/api/app/tags/`,
+		"POST",
+		{Authorization: `Token ${token}`}
+	);
+
+	xhr.send(
+		JSON.stringify(
+			{
+				name: name,
+			}
+		)
+	);
+
+	return xhr;	
+}
+
+function deleteTag(id, token) {
+	const xhr = makeXhr(
+		`${baseurl}/api/app/tags/delete/${id}/`,
+		"DELETE",
+		{Authorization: `Token ${token}`},
+	);
+
+	xhr.send(
+		JSON.stringify(
+			{"tag_id": id}
+		)
+	);
+
+	return xhr;	
+}

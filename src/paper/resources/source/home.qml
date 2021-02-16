@@ -35,8 +35,33 @@ Page{
 		}
 	}
 
+	function fetchTags(){
+		const token = encryptedStorage.read(constants.token_filename);
+		if (token) {
+			const xhr = ApiSDK.getTags(token.auth_token);
+
+			xhr.onload = function () {
+				const response = xhr.response;
+				const status = xhr.status;
+
+				if (status === 200) {
+					tag_list_model.clear();
+					response.map(
+						tag => {
+							tag_list_model.append(tag);
+						}
+					)
+				}
+			}
+
+		}else{
+			application.logoutAndGoAuth();
+		}
+	}
+
 	Component.onCompleted: {
 		fetchCheckbooks();
+		fetchTags();
 	}
 
 	RowLayout{
@@ -156,11 +181,10 @@ Page{
 			StackLayout {
 				id: middle_stack
 				anchors.fill: parent
+				currentIndex: menu_list.currentIndex
 
 				Page {
 					id: notes_page
-					width: 200
-					height: 200
 					title: "Notes"
 					background: Rectangle{color:"white"}
 
@@ -408,6 +432,130 @@ Page{
 
 									}else{
 										application.logoutAndGoAuth();
+									}
+								}
+							}
+						}
+					}
+				}
+
+				Page{
+					id: tags_page
+					title: "Tags"
+					background: Rectangle{color: "white"}
+
+					ColumnLayout{
+						spacing: 5
+						anchors.fill: parent
+
+						RowLayout{
+							Layout.fillWidth: true
+							Layout.fillHeight: true
+							Layout.margins: 10
+
+							UiComponents.Icon{
+								svgHeight: 22
+								svgWidth: 22
+								color: (new ColorJS.Color()).primary
+								path: MDIcons.mdiTag
+							}
+
+							Label{
+								text: "Tags"
+								Layout.fillWidth: true
+								font.pixelSize: 14
+								font.weight: Font.Bold
+								color: (new ColorJS.Color()).textdark
+							}
+						}
+
+						ScrollView{
+							clip: true
+							Layout.fillWidth: true
+							Layout.fillHeight: true
+
+							ListView{
+								clip: true
+								anchors.fill: parent
+								anchors.leftMargin: 5
+								anchors.rightMargin: 5
+								model: ListModel{id: tag_list_model}
+								delegate: UiDelegates.TagItemDelegate{
+									label.text: name
+									tag_id: id
+									width: (parent || {width: 0}).width
+
+									onRemovedFromDB: {
+										tag_list_model.remove(this);
+									}
+								}
+							}
+						}						
+
+						Rectangle{
+							id: add_tag_box
+							color: (new ColorJS.Color()).strokegray
+							height: 70
+							Layout.fillWidth: true
+							
+							RowLayout{
+								anchors.left: parent.left
+								anchors.right: parent.right
+								anchors.verticalCenter: parent.verticalCenter
+								anchors.leftMargin: 5
+								anchors.rightMargin: 5
+								height: 50
+								spacing: 5
+
+								TextField {
+									id: tag_name_field
+									Layout.fillWidth: true
+									Layout.fillHeight: true
+									Layout.preferredHeight: 50
+									placeholderText: qsTr("Tag name...")
+									padding: 5
+									color: (this.text.trim().length <= 20) ? (new ColorJS.Color()).textdark : (new ColorJS.Color()).danger
+									background: Rectangle{
+										color: "transparent"
+									}
+
+									onAccepted: {
+										create_new_tag_button.clicked();
+									}
+								}
+
+								UiControls.UiButton{
+									id: create_new_tag_button
+									label.text: "create"
+									Layout.preferredWidth: 80
+
+									onClicked: {
+										this.loading = true;
+										
+										const self = this;
+										const name = tag_name_field.text.trim();
+										const token = encryptedStorage.read(constants.token_filename);
+										
+										
+										if (token) {
+											const xhr = ApiSDK.createTag(name, token.auth_token);
+
+											xhr.onload = function () {
+												const response = xhr.response;
+												const status = xhr.status;
+
+												tag_list_model.append(response);
+												tag_name_field.text = "";
+												self.loading = false;
+											}
+
+											xhr.onerror = function () {
+												self.loading = false;
+											}
+
+										}else {
+											application.logoutAndGoAuth()
+										}
 									}
 								}
 							}
