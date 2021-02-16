@@ -10,6 +10,10 @@ Item {
 	height: 50
 	clip: true
 
+	property alias label: label
+	property alias about: about
+	property bool favourite: false
+
 	ColumnLayout{
 		spacing: 5
 		anchors.fill: parent
@@ -29,6 +33,7 @@ Item {
 			}
 
 			Label{
+				id: label
 				Layout.fillHeight: true
 				Layout.fillWidth: true
 				text: "Note Title"
@@ -56,13 +61,14 @@ Item {
 					enabled: false
 					svgHeight: 20
 					svgWidth: 20
-					path: MDIcons.mdiHeartOutline
+					path: (favourite) ? MDIcons.mdiHeart : MDIcons.mdiHeartOutline
 				}
 			}
 
 		}
 
 		Label{
+			id: about
 			text: "UI first iteration for Cloud Rapidity, a note-taking app integrating with... UI first iteration for Cloud Rapidity, a note-taking app integrating with..."
 			wrapMode: Text.WordWrap
 			Layout.fillHeight: true

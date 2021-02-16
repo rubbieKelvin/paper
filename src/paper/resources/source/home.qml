@@ -23,7 +23,11 @@ Page{
 			const xhr = ApiSDK.getCheckbooks(token.auth_token);
 			xhr.onload = function () {
 				const response = xhr.response;
-				console.log(JSON.stringify(response));
+				response.map(
+					checkbook_membership => {
+						check_book_item_list_model.append(checkbook_membership.checkbook);
+					}
+				);
 			}
 		}else{
 			application.logoutAndGoAuth();
@@ -31,7 +35,7 @@ Page{
 	}
 
 	Component.onCompleted: {
-
+		fetchCheckbooks();
 	}
 
 	RowLayout{
@@ -159,47 +163,40 @@ Page{
 					title: "Notes"
 					background: Rectangle{color:"white"}
 
-					RowLayout {
-						id: middle_header
+					Rectangle{
 						y: 15
+						radius: 20
 						height: 40
-						anchors.right: parent.right
-						anchors.left: parent.left
+						id: middle_header
 						anchors.margins: 10
+						anchors.left: parent.left
+						anchors.right: parent.right
+						color: (new ColorJS.Color()).strokegray
 
-						TextField{
-							font.pixelSize: 12
-							placeholderText: "Search Notes..."
-							Layout.fillHeight: true
-							Layout.fillWidth: true
-							padding: 15
-							background: Rectangle{
-								radius: 50
-								color: (new ColorJS.Color()).strokegray
-							}
-						}
-
-						RoundButton {
-							id: search_button
-							icon.source: search_icon.source
-							display: AbstractButton.IconOnly
-							Layout.preferredHeight: 40
-							Layout.preferredWidth: 40
-							background: Rectangle{
-								radius: 20
-								implicitHeight: 40
-								implicitWidth: 40
-								color: (new ColorJS.Color()).strokegray
-							}
+						RowLayout {
+							spacing: 5
+							anchors.fill: parent
+							anchors.rightMargin: 4
+							anchors.leftMargin: 4
 
 							UiComponents.Icon{
-								id: search_icon
-								visible: false
-								enabled: false
-								svgHeight: 40
-								svgWidth: 40
+								svgHeight: 24
+								svgWidth: 24
 								color: (new ColorJS.Color()).textdark
 								path: "M18.319 14.4326C20.7628 11.2941 20.542 6.75347 17.6569 3.86829C14.5327 0.744098 9.46734 0.744098 6.34315 3.86829C3.21895 6.99249 3.21895 12.0578 6.34315 15.182C9.22833 18.0672 13.769 18.2879 16.9075 15.8442C16.921 15.8595 16.9351 15.8745 16.9497 15.8891L21.1924 20.1317C21.5829 20.5223 22.2161 20.5223 22.6066 20.1317C22.9971 19.7412 22.9971 19.1081 22.6066 18.7175L18.364 14.4749C18.3493 14.4603 18.3343 14.4462 18.319 14.4326ZM16.2426 5.28251C18.5858 7.62565 18.5858 11.4246 16.2426 13.7678C13.8995 16.1109 10.1005 16.1109 7.75736 13.7678C5.41421 11.4246 5.41421 7.62565 7.75736 5.28251C10.1005 2.93936 13.8995 2.93936 16.2426 5.28251Z"
+							}
+
+							TextField{
+								font.pixelSize: 12
+								placeholderText: "Search Notes..."
+								Layout.fillHeight: true
+								Layout.fillWidth: true
+								padding: 10
+								background: Rectangle{
+									color: "transparent"
+									radius: 20
+									implicitHeight: 40
+								}
 							}
 						}
 					}
@@ -215,11 +212,12 @@ Page{
 							id: check_book_item_list
 							anchors.fill: parent
 							clip: true
-							model: ListModel{
-								id: check_book_item_list_model
-							}
 							spacing: 5
+							model: ListModel{id: check_book_item_list_model}
 							delegate: UiDelegates.CheckBookItem{
+								favourite: starred
+								label.text: name
+								about.text: "0 items"
 								width: (parent || {width: 0}).width
 							}
 						}
@@ -343,10 +341,11 @@ Page{
 											const status = xhr.status;
 
 											if (status === 200) {
-												console.log(JSON.stringify(response));
 												text_field.text = "";
 												box.visible = false;
 												action_button.loading = false;
+
+												check_book_item_list_model.append(response);
 											}else{
 												action_button.loading = false;
 											}
