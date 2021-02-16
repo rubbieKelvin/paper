@@ -78,3 +78,19 @@ function getCheckbooks(token){
 	xhr.send();
 	return xhr;
 }
+
+function editCheckbook(id, name, starred, token) {
+	const data = {checkbook_id: id}
+
+	if (name !== null || name !== undefined) data.name = name;
+	if (starred !== null || starred !== undefined) data.starred = starred;
+
+	const xhr = makeXhr(
+		`${baseurl}/api/app/checkbook/`,
+		"PATCH",
+		{Authorization: `Token ${token}`}
+	);
+	
+	xhr.send(JSON.stringify(data));
+	return xhr;
+}

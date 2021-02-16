@@ -227,6 +227,10 @@ Page{
 								about.text: "0 items"
 								width: (parent || {width: 0}).width
 								height: (visible) ? 50 : 0
+
+								Component.onCompleted: {
+									this.checkbook_id = id;
+								}
 							}
 						}
 					}
@@ -391,7 +395,7 @@ Page{
 												text_field.text = "";
 												box.visible = false;
 												action_button.loading = false;
-
+												
 												check_book_item_list_model.append(response);
 											}else{
 												action_button.loading = false;
