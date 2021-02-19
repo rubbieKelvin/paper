@@ -9,6 +9,10 @@ class Item{
 		if (this.component.status === Component.Ready) this.finish();
 		else this.component.statusChanged.connect(this.finish);
 	}
+
+	get qobject(){
+		return this._item;
+	}
 	
 	finish(){
 		if (this.component.status === Component.Ready){

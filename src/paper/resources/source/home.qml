@@ -39,7 +39,9 @@ Page{
 			const xhr = ApiSDK.getCheckbooks(token.auth_token);
 			xhr.onload = function () {
 				const response = xhr.response;
+
 				check_book_item_list_model.clear();
+				
 				response.map(
 					checkbook_membership => {
 						check_book_item_list_model.append(checkbook_membership.checkbook);
@@ -106,6 +108,16 @@ Page{
 			root.getting_current_checkbook = false;
 			application.logoutAndGoAuth();
 		}
+	}
+
+	function addTextItem(){
+		checkbook_model.append({modelData: {
+			id: null,
+			text: "The quick brown fox jumped over the lazy dog...",
+			title: "Title goes here...",
+			checkbook: root.current_checkbook_id,
+			type: "text"
+		}});
 	}
 
 	Component.onCompleted: {
@@ -307,6 +319,7 @@ Page{
 
 								onSelected: {
 									root.current_checkbook_id = this.checkbook_id;
+									checkbook_title_label.text = name;
 								}
 							}
 						}
@@ -678,6 +691,7 @@ Page{
 					height: 60
 
 					Label {
+						id: checkbook_title_label
 						text: qsTr("Checkbook Title")
 						font.weight: Font.Medium
 						font.pixelSize: 18
@@ -703,6 +717,8 @@ Page{
 								implicitWidth: 40
 								color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
 							}
+
+							onClicked: root.addTextItem();
 
 							UiComponents.Icon{
 								id: add_note_icon
@@ -861,6 +877,10 @@ Page{
 												)
 											}
 										);
+
+										item.qobject.deleted.connect(function(){
+											item.qobject.destroy();
+										});
 
 									} else if (modelData.type === "image") {
 										item = new Dl.Item(

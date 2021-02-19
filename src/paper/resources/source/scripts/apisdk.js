@@ -162,3 +162,24 @@ function editTextitem (checkbook_id, textitem_id, title, content, token) {
 
 	return xhr;
 }
+
+function createTextitem (checkbook_id, title, content, token) {
+	const xhr = makeXhr(`${baseurl}/api/app/checkbook/items/text/`, "POST", {Authorization: `Token ${token}`});
+
+	xhr.send(JSON.stringify({
+		checkbook_id: checkbook_id,
+		title: title,
+		content: content
+	}));
+
+	return xhr;
+}
+
+function deleteTextitem (checkbook_id, textitem_id, token) {
+	var xhr = makeXhr(`${baseurl}/api/app/checkbook/items/text/delete/${checkbook_id}/${textitem_id}/`, "DELETE",
+	{Authorization: `Token ${token}`});
+
+	xhr.send();
+	
+	return xhr;
+}

@@ -22,6 +22,8 @@ Rectangle{
 	property bool senderror: false
 	property variant modeldata: ({})
 
+	signal deleted()
+
 	function saveItem() {
 		const token = encryptedStorage.read(constants.token_filename);
 		
@@ -30,10 +32,17 @@ Rectangle{
 
 		if (token){
 			const checkbook_id = modeldata.checkbook;
-			const textitem_id  = modeldata.id;
 			const title_text   = title.text;
 			const content_text = label.text;
-			const xhr = ApiSDK.editTextitem(checkbook_id, textitem_id, title_text, content_text, token.auth_token);
+
+			let xhr;
+
+			if (modeldata.id !== null) {
+				const textitem_id  = modeldata.id;
+				xhr = ApiSDK.editTextitem(checkbook_id, textitem_id, title_text, content_text, token.auth_token);
+			}else{
+				xhr = ApiSDK.createTextitem(checkbook_id, title_text, content_text, token.auth_token);
+			}
 			
 			xhr.onload = function () {
 				const response = xhr.response;
@@ -60,6 +69,57 @@ Rectangle{
 			root.senderror = true;
 			root.sending = false;
 			application.logoutAndGoAuth();
+		}
+	}
+
+	function deleteItem() {
+		const token = encryptedStorage.read(constants.token_filename);
+		
+		root.enabled = false;
+		root.senderror = false;
+		root.sending = true;
+
+		if (token) {
+			const checkbook_id = modeldata.checkbook;
+			const textitem_id = modeldata.id;
+
+			const xhr = ApiSDK.deleteTextitem(checkbook_id, textitem_id, token.auth_token);
+
+			xhr.onload = function () {
+				// const response = xhr.response;
+				const status = xhr.status;
+
+				if (status === 204) {
+					root.deleted();
+					root.enabled = false;
+					root.senderror = false;
+					root.sending = false;
+
+				}else{
+					root.enabled = true;
+					root.senderror = true;
+					root.sending = false;
+				}
+			};
+
+			xhr.onerror = function () {
+				root.enabled = true;
+				root.senderror = true;
+				root.sending = false;
+			};
+
+		}else{
+			root.enabled = true;
+			root.senderror = true;
+			root.sending = false;
+			application.logoutAndGoAuth();
+		}
+	}
+
+	Component.onCompleted: {
+		// save newly created items
+		if (modeldata.id === null) {
+			root.saveItem();
 		}
 	}
 
@@ -165,6 +225,16 @@ Rectangle{
 
 		RowLayout{
 			Layout.fillWidth: true
+
+			Button {
+				Layout.fillWidth: true
+				visible: modeldata.id !== null
+				text: "Delete"
+				onClicked: {
+					root.editing = false;
+					root.deleteItem();
+				}
+			}
 			
 			Button {
 				Layout.fillWidth: true
