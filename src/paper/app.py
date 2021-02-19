@@ -45,7 +45,7 @@ def main():
 	app = QGuiApplication(sys.argv)
 	app.setApplicationName(metadata.get("Name"))
 	
-	QQuickStyle.setStyle("Fusion")
+	# QQuickStyle.setStyle("Material")
 	QmlEncryptedJSONStorage6.DICTIONARY = {"$apphome": home}
 
 	engine = Paper()

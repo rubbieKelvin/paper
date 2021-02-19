@@ -1,7 +1,7 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.11
-import QtQuick.Window 2.12
+import QtQuick.Window 2.15
 
 import "./components/" as UiComponents
 import "./components/controls" as UiControls
@@ -14,8 +14,24 @@ import "./scripts/mdicons.mjs" as MDIcons
 import "./scripts/apisdk.js" as ApiSDK
 
 Page{
+	id: root
 	title: "task"
 	background: Rectangle {color: "white"}
+
+	property int current_checkbook_id: -1
+	property bool getting_current_checkbook: false
+	property bool fetch_checkbook_success: false
+
+	onCurrent_checkbook_idChanged: {
+		if (current_checkbook_id === -1) {
+			main.currentIndex = 0;
+		}else{
+			main.currentIndex = 1;
+			// ...
+			// now fetch the checkbook
+			root.fetchCheckbook();
+		}
+	}
 
 	function fetchCheckbooks () {
 		const token = encryptedStorage.read(constants.token_filename);
@@ -55,6 +71,39 @@ Page{
 			}
 
 		}else{
+			application.logoutAndGoAuth();
+		}
+	}
+
+	function fetchCheckbook(){
+		root.getting_current_checkbook = true;
+		root.fetch_checkbook_success = false;
+
+		const token = encryptedStorage.read(constants.token_filename);
+		if (token) {
+			const xhr = ApiSDK.getCheckbook(root.current_checkbook_id, token.auth_token);
+
+			xhr.onload = function () {
+				const response = xhr.response;
+				const status = xhr.status;
+
+				if (status===200){
+					root.fetch_checkbook_success = true;
+					// save response in cache
+					// port data to model
+					checkbook_model.clear();
+					response.forEach(element => {
+						checkbook_model.append({modelData: element});
+					});
+				}
+				root.getting_current_checkbook = false;
+			}
+
+			xhr.onerror = function () {
+				root.getting_current_checkbook = false;
+			}
+		}else{
+			root.getting_current_checkbook = false;
 			application.logoutAndGoAuth();
 		}
 	}
@@ -254,6 +303,10 @@ Page{
 
 								Component.onCompleted: {
 									this.checkbook_id = id;
+								}
+
+								onSelected: {
+									root.current_checkbook_id = this.checkbook_id;
 								}
 							}
 						}
@@ -481,7 +534,7 @@ Page{
 								anchors.rightMargin: 5
 								model: ListModel{id: tag_list_model}
 								delegate: UiDelegates.TagItemDelegate{
-									label.text: name
+									label.text: name || "{{ no_title }}"
 									tag_id: id
 									width: (parent || {width: 0}).width
 
@@ -569,237 +622,292 @@ Page{
 		Rectangle{ color: "#e0e0e0"; Layout.preferredWidth: 1; Layout.fillHeight: true }
 
 		// Main
-		Rectangle{
+		StackLayout{
 			id: main
-			color: "#ffffff"
 			Layout.fillWidth: true
 			Layout.fillHeight: true
 
-			RowLayout {
-				id: header_main
-				anchors.left: parent.left
-				anchors.right: parent.right
-				anchors.margins: 20
-				height: 60
+			Page{
+				id: no_checkbook_page_view
+				background: Rectangle{color: "white"}
 
-				Label {
-					text: qsTr("Checkbook Title")
-					font.weight: Font.Medium
-					font.pixelSize: 18
-					verticalAlignment: Text.AlignVCenter
-					Layout.fillHeight: true
-					Layout.fillWidth: true
-				}
+				ColumnLayout{
+					visible: current_checkbook_id === -1
+					enabled: visible
+					anchors.centerIn: parent
+					spacing: 5
+					width: 152
+					height: 173
 
-				RowLayout{
-					spacing: 10
-					Layout.fillWidth: true
-					Layout.fillHeight: true
-
-					RoundButton {
-						id: note_button
-						icon.source: add_note_icon.source
-						display: AbstractButton.IconOnly
-						Layout.preferredHeight: 40
-						Layout.preferredWidth: 40
-						background: Rectangle{
-							radius: 20
-							implicitHeight: 40
-							implicitWidth: 40
-							color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
-						}
-
-						UiComponents.Icon{
-							id: add_note_icon
-							visible: false
-							enabled: false
-							svgHeight: 40
-							svgWidth: 40
-							color: (new ColorJS.Color()).textdark
-							path: MDIcons.mdiNotePlus
-						}
+					Image{
+						Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+						source: "./assets/svg/sad-face-in-rounded-square.svg"
 					}
 
-					RoundButton {
-						id: mic_button
-						icon.source: add_vn_icon.source
-						display: AbstractButton.IconOnly
-						Layout.preferredHeight: 40
-						Layout.preferredWidth: 40
-						background: Rectangle{
-							radius: 20
-							implicitHeight: 40
-							implicitWidth: 40
-							color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
-						}
-
-						UiComponents.Icon{
-							id: add_vn_icon
-							visible: false
-							enabled: false
-							svgHeight: 40
-							svgWidth: 40
-							color: (new ColorJS.Color()).textdark
-							path: MDIcons.mdiMicrophonePlus
-						}
+					Label{
+						text: qsTr("No Checkbook Selected!")
+						Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+						color: "#7f7f7f"
+						font.pixelSize: 14
+						font.weight: Font.Bold
 					}
-					
-					RoundButton {
-						id: img_button
-						icon.source: add_img_icon.source
-						display: AbstractButton.IconOnly
-						Layout.preferredHeight: 40
-						Layout.preferredWidth: 40
-						background: Rectangle{
-							radius: 20
-							implicitHeight: 40
-							implicitWidth: 40
-							color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
-						}
 
-						UiComponents.Icon{
-							id: add_img_icon
-							visible: false
-							enabled: false
-							svgHeight: 40
-							svgWidth: 40
-							color: (new ColorJS.Color()).textdark
-							path: MDIcons.mdiImagePlus
-						}
-					}
-					
-					RoundButton {
-						id: list_button
-						icon.source: add_list_icon.source
-						display: AbstractButton.IconOnly
-						Layout.preferredHeight: 40
-						Layout.preferredWidth: 40
-						background: Rectangle{
-							radius: 20
-							implicitHeight: 40
-							implicitWidth: 40
-							color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
-						}
 
-						UiComponents.Icon{
-							id: add_list_icon
-							visible: false
-							enabled: false
-							svgHeight: 40
-							svgWidth: 40
-							color: (new ColorJS.Color()).textdark
-							path: MDIcons.mdiCheckBoxMultipleOutline
-						}
+					Label {
+						text: qsTr("select a checkbook from the left pane.")
+						horizontalAlignment: Text.AlignHCenter
+						Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+						Layout.fillWidth: true
+						color: "#7f7f7f"
+						wrapMode: Text.WordWrap
+						font.pixelSize: 11
+
 					}
 				}
 			}
 
+			Page{
+				id: checkbook_page_view
+				background: Rectangle{color: "white"}
 
-			ScrollView {
-				clip: true
-				anchors.rightMargin: 20
-				anchors.leftMargin: 20
-				anchors.top: header_main.bottom
-				anchors.right: parent.right
-				anchors.bottom: parent.bottom
-				anchors.left: parent.left
-				anchors.topMargin: 0
+				RowLayout {
+					id: header_main
+					anchors.left: parent.left
+					anchors.right: parent.right
+					anchors.margins: 20
+					height: 60
 
-				Flow{
-					id: check_book_flow
-					width: main.width
+					Label {
+						text: qsTr("Checkbook Title")
+						font.weight: Font.Medium
+						font.pixelSize: 18
+						verticalAlignment: Text.AlignVCenter
+						Layout.fillHeight: true
+						Layout.fillWidth: true
+					}
+
+					RowLayout{
+						spacing: 10
+						Layout.fillWidth: true
+						Layout.fillHeight: true
+
+						RoundButton {
+							id: note_button
+							icon.source: add_note_icon.source
+							display: AbstractButton.IconOnly
+							Layout.preferredHeight: 40
+							Layout.preferredWidth: 40
+							background: Rectangle{
+								radius: 20
+								implicitHeight: 40
+								implicitWidth: 40
+								color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
+							}
+
+							UiComponents.Icon{
+								id: add_note_icon
+								visible: false
+								enabled: false
+								svgHeight: 40
+								svgWidth: 40
+								color: (new ColorJS.Color()).textdark
+								path: MDIcons.mdiNotePlus
+							}
+						}
+
+						RoundButton {
+							id: mic_button
+							icon.source: add_vn_icon.source
+							display: AbstractButton.IconOnly
+							Layout.preferredHeight: 40
+							Layout.preferredWidth: 40
+							background: Rectangle{
+								radius: 20
+								implicitHeight: 40
+								implicitWidth: 40
+								color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
+							}
+
+							UiComponents.Icon{
+								id: add_vn_icon
+								visible: false
+								enabled: false
+								svgHeight: 40
+								svgWidth: 40
+								color: (new ColorJS.Color()).textdark
+								path: MDIcons.mdiMicrophonePlus
+							}
+						}
+						
+						RoundButton {
+							id: img_button
+							icon.source: add_img_icon.source
+							display: AbstractButton.IconOnly
+							Layout.preferredHeight: 40
+							Layout.preferredWidth: 40
+							background: Rectangle{
+								radius: 20
+								implicitHeight: 40
+								implicitWidth: 40
+								color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
+							}
+
+							UiComponents.Icon{
+								id: add_img_icon
+								visible: false
+								enabled: false
+								svgHeight: 40
+								svgWidth: 40
+								color: (new ColorJS.Color()).textdark
+								path: MDIcons.mdiImagePlus
+							}
+						}
+						
+						RoundButton {
+							id: list_button
+							icon.source: add_list_icon.source
+							display: AbstractButton.IconOnly
+							Layout.preferredHeight: 40
+							Layout.preferredWidth: 40
+							background: Rectangle{
+								radius: 20
+								implicitHeight: 40
+								implicitWidth: 40
+								color: (parent.down) ? Qt.darker((new ColorJS.Color()).strokegray, 1.3) : (new ColorJS.Color()).strokegray
+							}
+
+							UiComponents.Icon{
+								id: add_list_icon
+								visible: false
+								enabled: false
+								svgHeight: 40
+								svgWidth: 40
+								color: (new ColorJS.Color()).textdark
+								path: MDIcons.mdiCheckBoxMultipleOutline
+							}
+						}
+					}
+				}
+
+				BusyIndicator{
+					id: header_progress_bar
+					width: parent.width
+					height: 40
+					anchors.centerIn: parent
+					visible: getting_current_checkbook
+					running: visible
+					enabled: visible
+				}
+
+				ScrollView {
 					clip: true
-					spacing: 10
-					padding: 5
+					enabled: visible
+					visible: (! getting_current_checkbook) && fetch_checkbook_success
+					anchors.rightMargin: 20
+					anchors.leftMargin: 20
+					anchors.top: header_main.bottom
+					anchors.right: parent.right
+					anchors.bottom: parent.bottom
+					anchors.left: parent.left
 
-					function addNote(title, note){}
-					function addRecording(title){}
-					function addImage(){}
-					function addList(){}
-
-					// Component.onCompleted: {
-					// 	const i = check_book_repeater.model
-					// 	i.push(
-					// 		{
-					// 			type: "text",
-					// 			value: "Lorem ipsum dolor sit amet"
-					// 		}
-					// 	)
-					// 	check_book_repeater.model = i;
-					// }
-
-					Repeater{
-						id: check_book_repeater
+					Flow{
+						id: check_book_flow
+						width: main.width
 						clip: true
-						model: ListModel{id: check_model}
-						delegate: Item{
-							id: _root
-							height: childrenRect.height
-							width: (childrenRect || parent || {width: 0}).width
+						spacing: 10
+						padding: 5
 
-							Component.onCompleted: {
-								let item;
+						function addNote(title, note){}
+						function addRecording(title){}
+						function addImage(){}
+						function addList(){}
 
-								if (modelData.type === "text") {
-									item = new Dl.Item(
-										Qt.createComponent("./components/delegates/TextDelegate.qml"),
-										_root,
-										{
-											text: modelData.value,
-											width: Qt.binding(
-												function(){
-													if (main.width < 700) return main.width-50;
-													return 320
-												}
-											)
-										}
-									);
+						// Component.onCompleted: {
+						// 	const i = check_book_repeater.model
+						// 	i.push(
+						// 		{
+						// 			type: "text",
+						// 			value: "Lorem ipsum dolor sit amet"
+						// 		}
+						// 	)
+						// 	check_book_repeater.model = i;
+						// }
 
-								} else if (modelData.type === "image") {
-									item = new Dl.Item(
-										Qt.createComponent("./components/delegates/ImageDelegate.qml"),
-										_root,
-										{
-											source: modelData.value,
-											widthRatio: Qt.binding(
-												function () {
-													if (main.width < 700)
-														return 1.0
-													else
-														return modelData.widthRatio;
-												}
-											),
-											width: Qt.binding(
-												function () {
-													if (main.width < 700)
-														return (main.width - 50);
-													else
-														return (main.width * modelData.widthRatio) - (modelData.widthRatio === 1 ? 50 : 30);
-												}
-											)
-										}
-									);
+						Repeater{
+							id: check_book_repeater
+							clip: true
+							model: ListModel{id: checkbook_model}
+							delegate: Item{
+								id: _root
+								height: childrenRect.height
+								width: (childrenRect || parent || {width: 0}).width
 
-								} else if (modelData.type === "list") {
-									item = new Dl.Item(
-										Qt.createComponent("./components/delegates/ListDelegate.qml"),
-										_root,
-										{model: modelData.value}
-									)
+								Component.onCompleted: {
+									let item;
 
-								} else if (modelData.type === "audio") {
-									item = new Dl.Item(
-										Qt.createComponent("./components/delegates/AudioDelegate.qml"),
-										_root,
-										{
-											audio: modelData.value,
-											width: Qt.binding(
-												function () {
-													return main.width-50;
-												}
-											)
-										}
-									)
+									if (modelData.type === "text") {
+										item = new Dl.Item(
+											Qt.createComponent("./components/delegates/TextDelegate.qml"),
+											_root,
+											{
+												text: modelData.text,
+												title: modelData.title,
+												modeldata: modelData,
+												width: Qt.binding(
+													function(){
+														if (main.width < 700) return main.width-50;
+														return 320
+													}
+												)
+											}
+										);
+
+									} else if (modelData.type === "image") {
+										item = new Dl.Item(
+											Qt.createComponent("./components/delegates/ImageDelegate.qml"),
+											_root,
+											{
+												source: modelData.value,
+												widthRatio: Qt.binding(
+													function () {
+														if (main.width < 700)
+															return 1.0
+														else
+															return modelData.widthRatio;
+													}
+												),
+												width: Qt.binding(
+													function () {
+														if (main.width < 700)
+															return (main.width - 50);
+														else
+															return (main.width * modelData.widthRatio) - (modelData.widthRatio === 1 ? 50 : 30);
+													}
+												)
+											}
+										);
+
+									} else if (modelData.type === "list") {
+										item = new Dl.Item(
+											Qt.createComponent("./components/delegates/ListDelegate.qml"),
+											_root,
+											{model: modelData.value}
+										)
+
+									} else if (modelData.type === "audio") {
+										item = new Dl.Item(
+											Qt.createComponent("./components/delegates/AudioDelegate.qml"),
+											_root,
+											{
+												audio: modelData.value,
+												width: Qt.binding(
+													function () {
+														return main.width-50;
+													}
+												)
+											}
+										)
+									}
 								}
 							}
 						}

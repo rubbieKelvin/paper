@@ -139,3 +139,26 @@ function deleteTag(id, token) {
 
 	return xhr;	
 }
+
+function getCheckbook(id, token){
+
+	const xhr = makeXhr(
+		`${baseurl}/api/app/checkbook/get/${id}/`,
+		"GET", {Authorization: `Token ${token}`}
+	);
+
+	xhr.send();
+	return xhr;
+}
+
+function editTextitem (checkbook_id, textitem_id, title, content, token) {
+	const xhr = makeXhr(`${baseurl}/api/app/checkbook/items/text/`, "PATCH", {Authorization: `Token ${token}`});
+	xhr.send(JSON.stringify({
+		checkbook_id: checkbook_id,
+		textitem_id: textitem_id,
+		title: title,
+		content: content
+	}));
+
+	return xhr;
+}

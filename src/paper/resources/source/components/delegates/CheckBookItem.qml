@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.11
 
 import '../' as UiComponents
@@ -16,6 +16,15 @@ Item {
 	property alias about: about
 	property bool favourite: false
 	property int checkbook_id
+
+	signal selected()
+
+	MouseArea {
+		anchors.fill: parent
+		hoverEnabled: false
+
+		onClicked: selected()
+	}
 
 	ColumnLayout{
 		spacing: 5
